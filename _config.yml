@@ -22,13 +22,11 @@ title: League Win Probability Model
 email: toz010@ucsd.edu
 description: >- # this means to ignore newlines until "baseurl:"
   Machine learning model predicting League of Legends match outcomes from champion picks and bans.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: jekyllrb
+
 github_username:  tobyzhan
 
 # Build settings
-theme:  jekyll-theme-minimal
+theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
 
