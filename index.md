@@ -122,6 +122,8 @@ Conclusion:
 
 Overall, these results suggest that the missingness of `pick1` is related to `league` but not to `side`.
 
+<iframe src="{{ '/assets/plots/missingness-plot.html' | relative_url }}" width="100%" height="500" frameborder="0"></iframe>
+
 ## Hypothesis Testing
 
 In this step, I tested whether banning `Vi` is associated with a higher team win rate.
@@ -139,6 +141,8 @@ Conclusion:
 
 - Since the p-value is greater than **0.05**, I fail to reject the null hypothesis.
 - There is not enough evidence to conclude that teams that ban `Vi` have a higher win rate than teams overall.
+
+<iframe src="{{ '/assets/plots/hypothesis-test-plot.html' | relative_url }}" width="100%" height="500" frameborder="0"></iframe>
 
 ## Framing a Prediction Problem
 
@@ -254,6 +258,8 @@ Conclusion:
 - In contrast, the engineered features summarize the picks with averages, which may lose useful information about specific champion combinations.
 - These added features therefore did not improve performance in this case.
 
+<iframe src="{{ '/assets/plots/final-model-plot.html' | relative_url }}" width="100%" height="500" frameborder="0"></iframe>
+
 ## Fairness Analysis
 
 For my fairness analysis, I evaluated whether my final model performs similarly for teams on blue side and teams on red side.
@@ -285,3 +291,5 @@ Conclusion:
 
 - Since the p-value is greater than **0.05**, I fail to reject the null hypothesis.
 - There is not statistically significant evidence that the model performs differently for blue-side teams and red-side teams.
+
+<iframe src="{{ '/assets/plots/fairness-plot.html' | relative_url }}" width="100%" height="500" frameborder="0"></iframe>
