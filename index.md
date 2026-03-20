@@ -5,7 +5,7 @@ title: Predicting League of Legends Match Outcomes from Champion Drafts
 
 # Predicting League of Legends Match Outcomes from Champion Drafts
 
-**Toby Zhang**
+**Author: Toby Zhang**
 
 This project studies whether champion draft choices in professional League of Legends matches can help explain and predict whether a team wins.
 
