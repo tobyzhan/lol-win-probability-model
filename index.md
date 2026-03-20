@@ -146,150 +146,48 @@ Conclusion:
 
 ## Framing a Prediction Problem
 
-In this project, I built a **binary classification** model to predict whether a League of Legends team wins a match.
+In this project, I will build a **binary classification** model to predict whether a League of Legends team wins a match. The response variable is `result`, where `1` means a win and `0` means a loss.
 
-- **Response variable:** `result`
-- `1` means a win
-- `0` means a loss
+This is a binary classification problem because each team has only two possible outcomes: win or lose.
 
-This is a binary classification problem because each team has only two possible outcomes:
+At the **time of prediction**, I would only know information available before the game starts, specifically during champion select. Because of this, I will only use pre-game features such as the champions picked and banned by each team. I will not use in-game statistics like kills, gold, or damage, since those are not known before the match begins.
 
-- win
-- loss
+I will evaluate my model mainly using **accuracy**, because the target variable is binary and wins and losses are fairly balanced, so accuracy gives a simple and interpretable measure of how often the model predicts correctly. I will also report **F1-score** as a secondary metric, since it helps account for the balance between precision and recall.
 
-At the **time of prediction**, I would only know information available before the game starts, specifically during champion select.
-
-Because of this:
-
-- I used pre-game features such as the champions picked and banned by each team
-- I did not use in-game statistics like kills, gold, or damage, since those are not known before the match begins
-
-I evaluated my model mainly using **accuracy** because:
-
-- the target variable is binary
-- wins and losses are fairly balanced
-- accuracy gives a simple and interpretable measure of how often the model predicts correctly
-
-I also reported **F1-score** as a secondary metric because:
-
-- it takes both precision and recall into account
-- it gives another way to evaluate model performance
 
 ## Baseline Model
 
-For my baseline model, I used the following features to predict `result`:
+For my baseline model, I used the draft-related columns `pick1` through `pick5` and `ban1` through `ban5` to predict the response variable `result`. These features are all nominal categorical variables, since champion names do not have a natural ordering, so I encoded them using one-hot encoding.
 
-- `pick1` through `pick5`
-- `ban1` through `ban5`
+I used logistic regression as my baseline model because it is a standard and interpretable method for binary classification. I trained the model in a pipeline that first one-hot encodes the categorical features and then fits the logistic regression classifier.
 
-These features are all **nominal categorical** variables because champion names do not have a natural ordering. Because of this, I encoded them using **one-hot encoding**.
+To evaluate performance, I split the data into training and test sets and measured performance on the held-out test set. My baseline model achieved an accuracy of about **0.55**. Since this is a binary classification problem with outcomes of win or loss, this is slightly better than chance. This suggests that champion picks and bans contain some predictive information, but the model is still limited and leaves room for improvement.
 
-For the model itself:
-
-- I used **logistic regression**
-- I chose logistic regression because it is a standard and interpretable model for binary classification
-
-To evaluate the model:
-
-- I split the data into training and test sets
-- I measured performance on the held-out test set using **accuracy** and **F1-score**
-
-Results:
-
-- **Accuracy:** about **0.55**
-- **F1-score:** about **0.55**
-
-Conclusion:
-
-- The baseline model performs slightly better than chance.
-- This suggests that champion picks and bans contain some predictive information about match outcomes.
-- However, the model is still fairly limited and leaves room for improvement.
 
 ## Final Model
 
-To improve my baseline model, I kept the original draft features and added more pre-game information.
+To improve my baseline model, I kept the original draft features `pick1` through `pick5` and `ban1` through `ban5`, and I also included the pre-game columns `side` and `patch`. These are all known before the match begins, so they are valid features for prediction.
 
-Original features:
+I then created two engineered features: `avg_pick_winrate` and `avg_pick_popularity`. The feature `avg_pick_winrate` is the average historical win rate of the five champions picked by a team, while `avg_pick_popularity` is the average frequency with which those champions were picked in the training data. I chose these features to summarize both the historical success and the overall popularity of a team’s draft.
 
-- `pick1` through `pick5`
-- `ban1` through `ban5`
-- `side`
-- `patch`
+To avoid leakage, I calculated these engineered features using only the training data. I again used logistic regression and tuned the hyperparameter `C` using `GridSearchCV` with 5-fold cross-validation.
 
-I also engineered two new features:
+The final model achieved a test accuracy of about **0.542** and an F1-score of about **0.542**, which is slightly worse than the baseline model. One possible reason is that the baseline already used the full draft information through one-hot encoded picks and bans, which is more detailed than these summary features. In contrast, the engineered features compress the draft into averages, which may lose useful information about specific champion combinations. These added features therefore did not improve performance in this case.
 
-- `avg_pick_winrate`
-- `avg_pick_popularity`
-
-These engineered features represent:
-
-- `avg_pick_winrate`: the average historical win rate of the five champions picked by a team
-- `avg_pick_popularity`: the average frequency with which those champions were picked in the training data
-
-I chose these features because they summarize:
-
-- how successful the team’s picks have been historically
-- how common or meta those picks are
-
-To avoid leakage:
-
-- I computed both engineered features using only the training data
-
-For modeling:
-
-- I again used **logistic regression**
-- I used a `ColumnTransformer` to one-hot encode the categorical features and pass the engineered numeric features into the model
-- I tuned the hyperparameter `C` using `GridSearchCV` with 5-fold cross-validation
-
-Hyperparameter tuning:
-
-- Tested values of `C`: **0.01, 0.1, 1, 10**
-- Best value of `C`: **0.01**
-
-Results:
-
-- **Accuracy:** about **0.542**
-- **F1-score:** about **0.542**
-
-Conclusion:
-
-- The final model performed slightly worse than the baseline model.
-- One possible reason is that the baseline already used the full draft information through one-hot encoded picks and bans.
-- In contrast, the engineered features summarize the picks with averages, which may lose useful information about specific champion combinations.
-- These added features therefore did not improve performance in this case.
 
 <iframe src="{{ '/assets/plots/final-model-plot.html' | relative_url }}" width="100%" height="500" frameborder="0"></iframe>
 
 ## Fairness Analysis
 
-For my fairness analysis, I evaluated whether my final model performs similarly for teams on blue side and teams on red side.
-
-Group definition:
-
-- Blue-side teams
-- Red-side teams
-
-Performance metric:
-
-- **Accuracy**
+For my fairness analysis, I evaluated whether my final model performs similarly for teams on blue side and teams on red side. I used `side` to define the two groups and measured model performance using **accuracy**.
 
 - **Null hypothesis:** The model is equally accurate for blue-side teams and red-side teams, and any observed difference is due to random chance.
 - **Alternative hypothesis:** The model is not equally accurate for blue-side teams and red-side teams.
 
-Test statistic:
 
-- The absolute difference in accuracy between blue-side teams and red-side teams on the test set
+The test statistic is the absolute difference in accuracy between blue-side teams and red-side teams on the test set. In my test set, the model’s accuracy was **0.547** for blue-side teams and **0.537** for red-side teams, for an observed difference of **0.010**. I used a permutation test by randomly shuffling the `side` labels many times and recomputing the difference in group accuracies each time to simulate the null distribution.
 
-Observed results:
+After running the permutation test, I obtained a p-value of **0.57**. Since this p-value is greater than my significance level of **0.05**, I fail to reject the null hypothesis. This suggests that there is not statistically significant evidence that my model performs differently for blue-side teams and red-side teams.
 
-- **Blue-side accuracy:** **0.547**
-- **Red-side accuracy:** **0.537**
-- **Observed difference:** **0.010**
-- **p-value:** **0.57**
-
-Conclusion:
-
-- Since the p-value is greater than **0.05**, I fail to reject the null hypothesis.
-- There is not statistically significant evidence that the model performs differently for blue-side teams and red-side teams.
 
 <iframe src="{{ '/assets/plots/fairness-plot.html' | relative_url }}" width="100%" height="500" frameborder="0"></iframe>
